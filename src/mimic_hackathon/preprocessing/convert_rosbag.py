@@ -1,6 +1,4 @@
 import collections
-import multiprocessing
-import queue
 import shutil
 from pathlib import Path
 from typing import Any, Callable
@@ -145,33 +143,27 @@ def _convert_rosbag(
 
 
 def convert_rosbag(
-    file_queue: multiprocessing.Queue,
-    len_dict: dict,
+    episode_name: str,
     *,
     data_dir: Path,
     out_dir: Path,
-) -> None:
-    """Converts a rosbag to zarr format."""
-    while True:
-        try:
-            episode_name = file_queue.get(block=False)
-        except queue.Empty:
-            break
+):
+    """Converts a rosbag to the specified target dataset format."""
 
-        print(f"- {episode_name}")
+    raw_episode_path = Path(data_dir, episode_name)
+    target_episode_path = out_dir / f"{episode_name}.zarr"
 
-        raw_episode_path = Path(data_dir, episode_name)
-        target_episode_path = out_dir / f"{episode_name}.zarr"
-
+    try:
         topic_arrays = _read_rosbag(raw_episode_path)
+    except Exception as e:
+        print(f"Error reading rosbag: {e}")
+        return 0
 
-        _convert_rosbag(
-            topic_arrays=topic_arrays,
-            target_episode_path=target_episode_path,
-            label_path=raw_episode_path / LABEL_FILE_NAME,
-        )
+    _convert_rosbag(
+        topic_arrays=topic_arrays,
+        target_episode_path=target_episode_path,
+        label_path=raw_episode_path / LABEL_FILE_NAME,
+    )
 
-        # TODO Change df_len temp hack.
-        len_dict[episode_name] = min(
-            len(val["message"]) for val in topic_arrays.values()
-        )
+    length = min(len(val["message"]) for val in topic_arrays.values())
+    return length
