@@ -91,3 +91,7 @@ python -m mimic_hackathon.preprocessing.convert_dataset \
    ```bash
    http://<server-ip>:<server-port>/docs
    ```
+
+## Run Policy Inference
+
+Before running the GUI on the robot station, copy and paste (and edit, if needed) the policy client config (`mimic_hackathon/config/policy_client_node.yaml`) to `~/mimic_ws/config/policy_client_node.yaml` in the robot station.

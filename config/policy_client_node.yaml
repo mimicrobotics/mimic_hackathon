@@ -1,0 +1,40 @@
+obs_data_components:
+    obs/robot0_ego_wrist_top_rgb:
+        horizon: 2
+        shape: [3, 224, 224]
+        target_frequency: 15
+        obs_type: ${ObsType:BGR}
+    obs/robot0_ego_wrist_bottom_rgb:
+        horizon: 2
+        shape: [3, 224, 224]
+        target_frequency: 15
+        obs_type: ${ObsType:BGR}
+    obs/workspace_rgb:
+        horizon: 2
+        shape: [3, 224, 224]
+        target_frequency: 15
+        obs_type: ${ObsType:BGR}
+    obs/robot0_eef_pose_lowdim:
+        horizon: 2
+        shape: [3]
+        target_frequency: 15
+        obs_type: ${ObsType:POSE_MATRIX}
+    obs/robot0_hand_joints_lowdim:
+        horizon: 2
+        shape: [16]
+        target_frequency: 15
+        obs_type: ${ObsType:JOINT_POS}
+
+action_data_components:
+    robot0_trans_lowdim:
+        horizon: 48
+        shape: [3]
+        target_frequency: 15
+    robot0_rot_lowdim:
+        horizon: 48
+        shape: [6]
+        target_frequency: 15
+    robot0_hand_joints_lowdim:
+        horizon: 48
+        shape: [16]
+        target_frequency: 15

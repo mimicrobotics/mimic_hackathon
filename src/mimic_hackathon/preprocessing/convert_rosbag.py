@@ -3,10 +3,13 @@ import shutil
 from pathlib import Path
 from typing import Any, Callable
 
+import einops
 import numpy as np
+import PIL
 import zarr
 from rosbags.rosbag2 import Reader
 from rosbags.typesys import Stores, get_typestore
+from torchvision import transforms
 
 from mimic_hackathon.preprocessing.ros_to_np import convert_ros_msg_to_np
 
@@ -20,6 +23,26 @@ NAME_MAP_ROS_MIMIC = {
     "/cameras/wrist_bottom": "robot0_ego_wrist_bottom_rgb",
     "/cameras/fixed_0": "workspace_rgb",
 }
+
+
+def _process_images(images: np.ndarray) -> np.ndarray:
+    # BGR -> RGB
+    images = images[..., ::-1]
+
+    # Resize to (224, 224)
+    images = np.stack(
+        [
+            transforms.Resize((224, 224))(
+                PIL.Image.fromarray(image, "RGB"),
+            )
+            for image in images
+        ],
+        axis=0,
+    )
+    # Columns first
+    images = einops.rearrange(images, "t h w c -> t c h w")
+    # Normalize
+    return images.astype(np.float32) / 255.0
 
 
 def _dict_apply(
@@ -54,6 +77,9 @@ def _read_rosbag(bag_file_path: Path) -> dict:
             timestamp = timestamp - init_time
 
             topic = NAME_MAP_ROS_MIMIC[connection.topic]
+
+            if topic.endswith("_rgb"):
+                msg = _process_images(msg)
 
             topic_arrays[topic]["timestamp"].append(timestamp)
             topic_arrays[topic]["message"].append(msg)
