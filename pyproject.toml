@@ -1,0 +1,58 @@
+[tool.poetry]
+name = "mimic_hackathon"
+version = "0.1.0"
+description = "Mimic data pre-processing and remote inference server utils for the hackathon."
+authors = ["Mimic AI Team <devel@mimicrobotics.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.10.12"
+av = "^13.0.0"
+dill = "^0.3.8"
+fastapi = "^0.115.6"
+ffmpeg = "^1.4"
+imagecodecs = "^2024.6.1"
+numpy = "^1.26.4"
+orjson = "^3.10.7"
+rosbags = "^0.10.3"
+rosbags-image = "^0.10.0"
+scipy = "^1.13.1"
+tyro = "0.9.19"
+uvicorn = {extras = ["standard"], version = "^0.30.6"}
+zarr = "^2.18.2"
+
+[tool.poetry.group.dev.dependencies]
+bandit = "^1.7.8"
+poethepoet = "^0.29.0"
+pre-commit = "^3.7.1"
+pytest = "^8.2.2"
+ruff = "0.4.8"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+pydocstyle.convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+clean = """
+# Multiline commands including comments work too. Unescaped whitespace is ignored.
+rm -rf .cache
+       .pytest_cache
+       .ruff_cache
+       ./**/__pycache__
+       ./**/*.pyc
+       ./**/*.pyo
+       ./**/*.spec
+       ./**/*.egg-info
+       build
+       dist
+"""
+pre = "pre-commit run --all-files"
