@@ -40,7 +40,8 @@ data = {}
 def load_model_checkpoint() -> None:
     checkpoint_path = data[KEY_CHECKPOINT_PATH]
     logger.info(f"Loading {checkpoint_path.name} checkpoint ...")
-    data[KEY_POLICY_PLAYER] = ...(checkpoint_path)  # TODO: Load checkpoint.
+    # TODO: Load checkpoint
+    # data[KEY_POLICY_PLAYER] = ...(checkpoint_path)
     logger.info(f"Checkpoint {checkpoint_path.name} loaded successfully.")
 
 
