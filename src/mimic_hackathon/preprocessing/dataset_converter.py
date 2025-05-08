@@ -1,7 +1,9 @@
 import multiprocessing
 from collections.abc import Callable
-from multiprocessing import Process, Queue
 from pathlib import Path
+from typing import Dict
+from functools import partial
+from tqdm import tqdm
 
 import numpy as np
 
@@ -12,6 +14,10 @@ def get_raw_episode_folder_names(dataset_path: Path) -> list[str]:
         for folder_path in dataset_path.iterdir()
         if folder_path.is_dir() and not folder_path.name.startswith("converted")
     ]
+
+
+def conv_fn_wrapper(x: Callable, kwargs: Dict):
+    return x(**kwargs)
 
 
 class DatasetConverter:
@@ -39,31 +45,29 @@ class DatasetConverter:
 
         print(f"Converting {len(file_names)} episodes:")
 
-        file_names_queue = Queue()
-        for file_name in file_names:
-            file_names_queue.put(file_name)
+        conversion_kwargs = [
+            {
+                "episode_name": file_name,
+                "data_dir": self.dataset_path,
+                "out_dir": self.out_dir,
+                **kwargs,
+            }
+            for file_name in file_names
+        ]
 
-        with multiprocessing.Manager() as manager:
-            len_dict = manager.dict()
-
-            workers = []
-            for _ in range(self.n_workers):
-                process = Process(
-                    target=convert_fn,
-                    args=(file_names_queue, len_dict),
-                    kwargs={
-                        "data_dir": self.dataset_path,
-                        "out_dir": self.out_dir,
-                        **kwargs,
-                    },
-                )
-                workers.append(process)
-                process.start()
-
-            for process in workers:
-                process.join()
-
-            lengths = len_dict.values()
+        lengths = []
+        conv_fn_partial = partial(conv_fn_wrapper, convert_fn)
+        with multiprocessing.Pool(self.n_workers) as pool:
+            with tqdm(
+                total=len(conversion_kwargs),
+                desc="Converting episodes",
+                dynamic_ncols=True,
+                position=0,
+                leave=True,
+            ) as pbar:
+                for length in pool.imap_unordered(conv_fn_partial, conversion_kwargs):
+                    lengths.append(length)
+                    pbar.update()
 
         max_length = max(lengths)
         min_length = min(lengths)
