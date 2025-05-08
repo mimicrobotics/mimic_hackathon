@@ -80,7 +80,7 @@ python -m mimic_hackathon.preprocessing.convert_dataset \
 1. Launch the policy server:
 
    ```bash
-   python policy_server.py \
+   python -m mimic_hackathon.inference.policy_server \
       --ip <server-ip> \
       --port <server-port> \
       --checkpoint-path /path/to/checkpoint
